@@ -1,0 +1,15 @@
+# Backend
+user-auth-api/node_modules/
+user-auth-api/.env
+user-auth-api/uploads/
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+
+# VS Code
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
