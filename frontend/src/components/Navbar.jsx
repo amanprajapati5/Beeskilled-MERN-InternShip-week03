@@ -12,24 +12,62 @@ function Navbar() {
   };
 
   return (
-    <nav>
-      <h2>My Todo App</h2>
+    <header className="navbar">
 
-      <div>
-        <Link to="/login">Login</Link>
-        {" | "}
-        <Link to="/register">Register</Link>
-        {" | "}
-        <Link to="/dashboard">Dashboard</Link>
+      <div className="navbar-inner">
 
-        {token && (
-          <>
-            {" | "}
-            <button onClick={handleLogout}>Logout</button>
-          </>
-        )}
+        <Link to="/dashboard" className="brand">
+          <span className="brand-mark">✓</span>
+
+          <span className="brand-name">
+            TaskFlow
+          </span>
+        </Link>
+
+        <nav className="nav-links">
+
+          {token && (
+            <Link
+              to="/dashboard"
+              className="nav-link active"
+            >
+              Dashboard
+            </Link>
+          )}
+
+          {!token && (
+            <>
+              <Link
+                to="/login"
+                className="nav-link"
+              >
+                Login
+              </Link>
+
+              <Link
+                to="/register"
+                className="nav-link nav-register"
+              >
+                Create account
+              </Link>
+            </>
+          )}
+
+          {token && (
+            <button
+              type="button"
+              className="logout-button"
+              onClick={handleLogout}
+            >
+              Logout
+            </button>
+          )}
+
+        </nav>
+
       </div>
-    </nav>
+
+    </header>
   );
 }
 

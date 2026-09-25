@@ -1,6 +1,7 @@
 const express = require("express");
 const multer = require("multer");
 const path = require("path");
+const fs = require("fs");
 
 const Image = require("../models/Image");
 const authMiddleware = require("../middleware/authMiddleware");
@@ -96,6 +97,41 @@ router.get("/", authMiddleware, async (req, res) => {
     });
 
     res.status(200).json(images);
+  } catch (error) {
+    res.status(500).json({
+      message: error.message
+    });
+  }
+});
+
+// DELETE IMAGE
+router.delete("/:id", authMiddleware, async (req, res) => {
+  try {
+    const image = await Image.findOneAndDelete({
+      _id: req.params.id,
+      user: req.user.userId
+    });
+
+    if (!image) {
+      return res.status(404).json({
+        message: "Image not found"
+      });
+    }
+
+    const filePath = path.join(
+  __dirname,
+  "..",
+  "uploads",
+  image.filename
+);
+
+if (fs.existsSync(filePath)) {
+  fs.unlinkSync(filePath);
+}
+
+    res.status(200).json({
+      message: "Image deleted successfully"
+    });
   } catch (error) {
     res.status(500).json({
       message: error.message

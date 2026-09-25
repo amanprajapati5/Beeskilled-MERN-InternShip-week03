@@ -10,7 +10,6 @@ function ImageUpload() {
 
   const token = localStorage.getItem("token");
 
-  // Load previously uploaded images
   const loadImages = async () => {
     try {
       const response = await fetch(
@@ -25,6 +24,12 @@ function ImageUpload() {
       const data = await response.json();
 
       if (!response.ok) {
+        if (response.status === 401) {
+          localStorage.removeItem("token");
+          window.location.href = "/login";
+          return;
+        }
+
         throw new Error(
           data.message || "Failed to load images"
         );
@@ -36,7 +41,6 @@ function ImageUpload() {
     }
   };
 
-  // Load images when dashboard opens/refreshed
   useEffect(() => {
     if (token) {
       loadImages();
@@ -118,6 +122,12 @@ function ImageUpload() {
       const data = await response.json();
 
       if (!response.ok) {
+        if (response.status === 401) {
+          localStorage.removeItem("token");
+          window.location.href = "/login";
+          return;
+        }
+
         throw new Error(
           data.message || "Image upload failed"
         );
@@ -139,25 +149,93 @@ function ImageUpload() {
     }
   };
 
+  const handleDelete = async (imageId) => {
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this image?"
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      setError("");
+      setMessage("");
+
+      const response = await fetch(
+        `http://localhost:5000/api/upload/${imageId}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          localStorage.removeItem("token");
+          window.location.href = "/login";
+          return;
+        }
+
+        throw new Error(
+          data.message || "Image deletion failed"
+        );
+      }
+
+      setUploadedImages((currentImages) =>
+        currentImages.filter(
+          (image) => image._id !== imageId
+        )
+      );
+
+      setMessage("Image deleted successfully!");
+    } catch (error) {
+      setError(error.message);
+    }
+  };
+
   return (
-    <div className="image-upload">
+    <section className="image-upload">
 
       <div className="upload-header">
-        <h2>Upload Image</h2>
 
-        <p>
-          Select an image and preview it before uploading.
-        </p>
+        <div className="image-section-icon">
+          ◈
+        </div>
+
+        <div>
+          <span className="section-eyebrow">
+            MEDIA
+          </span>
+
+          <h2>Image library</h2>
+
+          <p>
+            Upload and manage your project images.
+          </p>
+        </div>
+
       </div>
 
       <label className="upload-box">
-        <span className="upload-icon">📷</span>
 
-        <strong>Choose an image</strong>
+        <span className="upload-icon">↑</span>
+
+        <strong>
+          Drop your image here
+        </strong>
 
         <span>
-          JPG, JPEG, PNG or WEBP · Max 5MB
+          or click to browse from your computer
         </span>
+
+        <small>
+          JPG, PNG, WEBP · Maximum 5MB
+        </small>
 
         <input
           type="file"
@@ -165,48 +243,76 @@ function ImageUpload() {
           onChange={handleFileChange}
           hidden
         />
+
       </label>
 
       {preview && (
         <div className="preview-section">
-          <h3>Preview</h3>
+
+          <div className="preview-header">
+            <h3>Selected image</h3>
+
+            <span>
+              {selectedFile?.name}
+            </span>
+          </div>
 
           <img
             src={preview}
             alt="Selected preview"
             className="image-preview"
           />
+
+          <button
+            type="button"
+            className="upload-button primary-button"
+            onClick={handleUpload}
+            disabled={uploading}
+          >
+            {uploading
+              ? "Uploading..."
+              : "Upload image →"}
+          </button>
+
         </div>
       )}
 
-      {selectedFile && (
-        <button
-          type="button"
-          className="upload-button"
-          onClick={handleUpload}
-          disabled={uploading}
-        >
-          {uploading ? "Uploading..." : "Upload Image"}
-        </button>
-      )}
-
       {message && (
-        <p className="success-message">
-          {message}
-        </p>
+        <div className="alert success-alert">
+          ✓ {message}
+        </div>
       )}
 
       {error && (
-        <p className="error-message">
+        <div className="alert error-alert">
           {error}
-        </p>
+        </div>
       )}
 
-      {uploadedImages.length > 0 && (
-        <div className="uploaded-section">
+      <div className="uploaded-section">
 
-          <h3>Uploaded Images</h3>
+        <div className="section-heading compact">
 
+          <div>
+            <span className="section-eyebrow">
+              COLLECTION
+            </span>
+
+            <h3>Uploaded images</h3>
+          </div>
+
+          <span className="image-count">
+            {uploadedImages.length}
+          </span>
+
+        </div>
+
+        {uploadedImages.length === 0 ? (
+          <div className="image-empty-state">
+            <span>◈</span>
+            <p>No images uploaded yet.</p>
+          </div>
+        ) : (
           <div className="uploaded-gallery">
 
             {uploadedImages.map((image) => (
@@ -214,24 +320,37 @@ function ImageUpload() {
                 className="uploaded-image-card"
                 key={image._id}
               >
-                <img
-                  src={image.imageUrl}
-                  alt="Uploaded"
-                  className="uploaded-image"
-                />
 
-                <p>
-                  Uploaded successfully
-                </p>
+                <div className="image-wrapper">
+
+                  <img
+                    src={image.imageUrl}
+                    alt="Uploaded"
+                    className="uploaded-image"
+                  />
+
+                  <button
+                    type="button"
+                    className="image-delete-button"
+                    onClick={() =>
+                      handleDelete(image._id)
+                    }
+                    aria-label="Delete image"
+                  >
+                    ×
+                  </button>
+
+                </div>
+
               </div>
             ))}
 
           </div>
+        )}
 
-        </div>
-      )}
+      </div>
 
-    </div>
+    </section>
   );
 }
 

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { registerUser } from "../services/authService";
 
 function Register() {
@@ -8,6 +9,7 @@ function Register() {
 
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -16,6 +18,8 @@ function Register() {
     setError("");
 
     try {
+      setLoading(true);
+
       const data = await registerUser({
         name,
         email,
@@ -27,65 +31,128 @@ function Register() {
       setName("");
       setEmail("");
       setPassword("");
-
     } catch (error) {
       setError(error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div>
-      <h1>Create Account</h1>
+    <main className="auth-page">
 
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>Name</label>
-          <br />
-          <input
-            type="text"
-            value={name}
-            onChange={(event) => setName(event.target.value)}
-            placeholder="Enter your name"
-            required
-          />
+      <div className="auth-card register-card">
+
+        <div className="auth-brand">
+          <span className="brand-mark">✓</span>
+          <span>TaskFlow</span>
         </div>
 
-        <br />
+        <div className="auth-heading">
+          <span className="section-eyebrow">
+            GET STARTED
+          </span>
 
-        <div>
-          <label>Email</label>
-          <br />
-          <input
-            type="email"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            placeholder="Enter your email"
-            required
-          />
+          <h1>Create your account</h1>
+
+          <p>
+            Start organizing your work with TaskFlow.
+          </p>
         </div>
 
-        <br />
+        <form
+          className="auth-form"
+          onSubmit={handleSubmit}
+        >
 
-        <div>
-          <label>Password</label>
-          <br />
-          <input
-            type="password"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            placeholder="Create a password"
-            required
-          />
+          <div className="form-field">
+            <label htmlFor="register-name">
+              Full name
+            </label>
+
+            <input
+              id="register-name"
+              type="text"
+              value={name}
+              onChange={(event) =>
+                setName(event.target.value)
+              }
+              placeholder="Enter your name"
+              required
+            />
+          </div>
+
+          <div className="form-field">
+            <label htmlFor="register-email">
+              Email address
+            </label>
+
+            <input
+              id="register-email"
+              type="email"
+              value={email}
+              onChange={(event) =>
+                setEmail(event.target.value)
+              }
+              placeholder="you@example.com"
+              required
+            />
+          </div>
+
+          <div className="form-field">
+            <label htmlFor="register-password">
+              Password
+            </label>
+
+            <input
+              id="register-password"
+              type="password"
+              value={password}
+              onChange={(event) =>
+                setPassword(event.target.value)
+              }
+              placeholder="Create a password"
+              required
+            />
+          </div>
+
+          <button
+            type="submit"
+            className="auth-submit-button"
+            disabled={loading}
+          >
+            {loading
+              ? "Creating account..."
+              : "Create account"}
+
+            {!loading && <span>→</span>}
+          </button>
+
+          {message && (
+            <div className="alert success-alert">
+              ✓ {message}
+            </div>
+          )}
+
+          {error && (
+            <div className="alert error-alert">
+              {error}
+            </div>
+          )}
+
+        </form>
+
+        <div className="auth-footer">
+          <span>Already have an account?</span>
+
+          <Link to="/login">
+            Sign in
+          </Link>
         </div>
 
-        <br />
+      </div>
 
-        <button type="submit">Register</button>
-      </form>
-
-      {message && <p>{message}</p>}
-      {error && <p>{error}</p>}
-    </div>
+    </main>
   );
 }
 

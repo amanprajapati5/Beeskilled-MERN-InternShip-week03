@@ -7,6 +7,7 @@ function TaskForm({ onTaskCreated }) {
 
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -14,53 +15,136 @@ function TaskForm({ onTaskCreated }) {
     setMessage("");
     setError("");
 
+    if (!title.trim()) {
+      setError("Task title is required.");
+      return;
+    }
+
     try {
+      setLoading(true);
+
       const newTask = await createTask({
-        title,
-        description
+        title: title.trim(),
+        description: description.trim()
       });
 
       onTaskCreated(newTask);
 
-      setMessage("Task created successfully!");
       setTitle("");
       setDescription("");
+      setMessage("Task created successfully!");
     } catch (error) {
       setError(error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <form className="task-form" onSubmit={handleSubmit}>
-      <h2>Add New Task</h2>
 
-      <label>Task Title</label>
+      {/* FORM HEADER */}
 
-      <input
-        type="text"
-        value={title}
-        onChange={(event) => setTitle(event.target.value)}
-        placeholder="What do you need to do?"
-        required
-      />
+      <div className="form-heading">
 
-      <br />
-      <br />
+        <div className="form-icon">
+          +
+        </div>
 
-      <label>Description</label>
+        <div>
+          <span className="section-eyebrow">
+            NEW TASK
+          </span>
 
-      <textarea
-        value={description}
-        onChange={(event) => setDescription(event.target.value)}
-        placeholder="Add some details..."
-      />
+          <h2>Create a task</h2>
 
-      <br />
+          <p>
+            Add something you want to accomplish.
+          </p>
+        </div>
 
-      <button type="submit">+ Add Task</button>
+      </div>
 
-      {message && <p>{message}</p>}
-      {error && <p>{error}</p>}
+      {/* FORM FIELDS */}
+
+      <div className="form-fields">
+
+        <div className="form-field">
+
+          <label htmlFor="task-title">
+            Task title
+          </label>
+
+          <input
+            id="task-title"
+            type="text"
+            value={title}
+            onChange={(event) =>
+              setTitle(event.target.value)
+            }
+            placeholder="e.g. Finish MERN project"
+            required
+          />
+
+        </div>
+
+        <div className="form-field">
+
+          <label htmlFor="task-description">
+            Description
+          </label>
+
+          <textarea
+            id="task-description"
+            value={description}
+            onChange={(event) =>
+              setDescription(event.target.value)
+            }
+            placeholder="Add some details about this task..."
+          />
+
+        </div>
+
+      </div>
+
+      {/* FORM FOOTER */}
+
+      <div className="form-footer">
+
+        <span className="form-hint">
+          Keep your tasks clear and actionable.
+        </span>
+
+        <button
+          type="submit"
+          className="primary-button"
+          disabled={loading}
+        >
+          {loading ? "Creating..." : "Create Task"}
+
+          {!loading && (
+            <span>→</span>
+          )}
+        </button>
+
+      </div>
+
+      {/* SUCCESS MESSAGE */}
+
+      {message && (
+        <div className="alert success-alert">
+          ✓ {message}
+        </div>
+      )}
+
+      {/* ERROR MESSAGE */}
+
+      {error && (
+        <div className="alert error-alert">
+          {error}
+        </div>
+      )}
+
     </form>
   );
 }

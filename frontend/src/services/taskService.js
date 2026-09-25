@@ -16,8 +16,16 @@ export const getTasks = async () => {
   const data = await response.json();
 
   if (!response.ok) {
-    throw new Error(data.message || "Failed to fetch tasks");
+  if (response.status === 401) {
+    localStorage.removeItem("token");
+    window.location.href = "/login";
+    return;
   }
+
+  throw new Error(
+    data.message || "Failed to fetch tasks"
+  );
+}
 
   return data;
 };
@@ -35,9 +43,17 @@ export const createTask = async (taskData) => {
 
   const data = await response.json();
 
-  if (!response.ok) {
-    throw new Error(data.message || "Failed to create task");
+ if (!response.ok) {
+  if (response.status === 401) {
+    localStorage.removeItem("token");
+    window.location.href = "/login";
+    return;
   }
+
+  throw new Error(
+    data.message || "Failed to create task"
+  );
+}
 
   return data;
 };
@@ -73,9 +89,17 @@ export const deleteTask = async (taskId) => {
 
   const data = await response.json();
 
-  if (!response.ok) {
-    throw new Error(data.message || "Failed to delete task");
+ if (!response.ok) {
+  if (response.status === 401) {
+    localStorage.removeItem("token");
+    window.location.href = "/login";
+    return;
   }
+
+  throw new Error(
+    data.message || "Failed to delete task"
+  );
+}
 
   return data;
 };
